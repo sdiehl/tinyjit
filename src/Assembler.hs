@@ -106,7 +106,7 @@ data Instr
 
 data JITMem = JITMem
  { _instrs :: [Instr]
- , _mach   :: [CUChar]
+ , _mach   :: [Word8]
  , _icount :: Word32
  , _memptr :: Word32
  , _memoff :: Word32
@@ -123,7 +123,7 @@ istate start = JITMem
   , _memoff = start
   }
 
-emit :: [CUChar] -> X86 ()
+emit :: [Word8] -> X86 ()
 emit i = modify $ \s -> s
   { _mach = _mach s ++ i
   , _memoff = _memoff s + fromIntegral (length i)
@@ -291,7 +291,7 @@ label = do
 nodef :: X86 ()
 nodef = lift $ throwE "Invalid operation"
 
-index :: Reg -> CUChar
+index :: Reg -> Word8
 index x = case x of
   RAX -> 0
   RCX -> 1
@@ -310,7 +310,7 @@ assemble start = runExcept . flip execStateT (istate ptr)
 hex :: (Integral a, Show a) => a -> String
 hex x = showHex x ""
 
-bytes :: Integral a => a -> [CUChar]
-bytes x = fmap (CUChar. BS.c2w) bs
+bytes :: Integral a => a -> [Word8]
+bytes x = fmap BS.c2w bs
   where
     bs = unpack $ runPut $ putWord32le (fromIntegral x)

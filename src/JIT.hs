@@ -97,12 +97,12 @@ newtype MmapFlags = MmapFlags { unMmapFlags :: CInt }
 foreign import ccall "dynamic"
   mkFun :: FunPtr (IO Int) -> IO Int
 
-getFunction :: Ptr CUChar -> IO Int
+getFunction :: Ptr Word8 -> IO Int
 getFunction mem = do
   let fptr = unsafeCoerce mem :: FunPtr (IO Int)
   mkFun fptr
 
-jit :: Ptr CUChar -> [CUChar] -> IO (IO Int)
+jit :: Ptr Word8 -> [Word8] -> IO (IO Int)
 jit mem machCode = do
   code <- codePtr machCode
   withForeignPtr (vecPtr code) $ \ptr -> do
@@ -128,19 +128,19 @@ mmap
   -> MmapFlags
   -> Fd
   -> COff
-  -> IO (Ptr CUChar)
+  -> IO (Ptr Word8)
 mmap addr len prot flags fd offset = do
   ptr <- c_mmap addr len prot flags fd offset
   when (ptr == intPtrToPtr (-1)) $ throwIO MmapException
   return ptr
 
-codePtr :: [CUChar] -> IO (VM.IOVector CUChar)
+codePtr :: [Word8] -> IO (VM.IOVector Word8)
 codePtr = V.thaw . V.fromList
 
 vecPtr :: Storable a => VM.MVector s a -> ForeignPtr a
 vecPtr = fst . VM.unsafeToForeignPtr0
 
-allocateMemory :: CSize -> IO (Ptr CUChar)
+allocateMemory :: CSize -> IO (Ptr Word8)
 allocateMemory size = mmap nullPtr size pflags mflags (-1) 0
   where
     pflags = protRead <> protWrite

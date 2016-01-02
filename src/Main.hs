@@ -45,7 +45,7 @@ factorial n = do
   loop l1
   ret
 
-dump :: [CUChar] -> IO ()
+dump :: [Word8] -> IO ()
 dump = mapM_ (Prelude.putStrLn . hex)
 
 main :: IO ()
@@ -56,9 +56,9 @@ main = do
   msg <- asciz "Hello Haskell"
   mem <- allocateMemory jitsize
 
-  {-let jitm = assemble mem (printf fn msg)-}
+  let jitm = assemble mem (printf fn msg)
   {-let jitm = assemble mem arith-}
-  let jitm = assemble mem (factorial 5)
+  {-let jitm = assemble mem (factorial 5)-}
 
   case jitm of
     Left err -> putStrLn err

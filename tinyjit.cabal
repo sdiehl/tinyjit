@@ -22,9 +22,9 @@ executable example
     JIT
 
   build-depends:      
-    base         >= 4.8 && <4.10,
+    base         >= 4.6 && <4.10,
     unix         >= 2.6 && <2.8,
     transformers >= 0.4 && <0.5,
     binary       >= 0.7 && <0.8,
     bytestring   >= 0.10 && <0.11,
-    vector -any
+    vector       >= 0.11 && <0.12

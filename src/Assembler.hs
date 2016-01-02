@@ -57,7 +57,7 @@ import Foreign.C.String
 import JIT
 
 -------------------------------------------------------------------------------
--- x86 Monad
+-- X86 Monad
 -------------------------------------------------------------------------------
 
 data Reg
@@ -125,12 +125,6 @@ emit i = modify $ \s -> s
   { _mach = _mach s ++ i
   , _memoff = _memoff s + fromIntegral (length i)
   }
-
-immval :: Val -> X86 ()
-immval i = case i of
-  I y  -> imm y
-  A y  -> imm y
-  R y  -> emit [opcode y]
 
 imm :: Integral a => a -> X86 ()
 imm = emit . bytes
@@ -215,7 +209,7 @@ mov (R dst) (A src) = do
 mov (R dst) (R src) = do
   emit [0x48]              -- REX.W prefix
   emit [0x89]              -- MOV
-  emit [(regIndex dst - 3) .|. regIndex src]
+  emit [0xC0 .|. opcode src `shiftL` 3 .|. opcode dst]
 mov _ _ = nodef
 
 nop :: X86 ()
@@ -279,18 +273,6 @@ label = do
 
 nodef :: X86 ()
 nodef = lift $ throwE "Invalid operation"
-
--- XXX: remove
-regIndex :: Reg -> CUChar
-regIndex x = case x of
-  RAX -> 0xC0
-  RCX -> 0xC8
-  RDX -> 0xD0
-  RBX -> 0xD8
-  RSP -> 0xE0
-  RBP -> 0xE8
-  RSI -> 0xF0
-  RDI -> 0xF8
 
 opcode :: Reg -> CUChar
 opcode x = case x of

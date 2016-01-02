@@ -64,9 +64,6 @@ main = do
     Left err -> putStrLn err
     Right jitst -> do
       let machCode = _mach jitst
-      let memptr   = _memptr jitst
-      let memoff   = _memoff jitst
-
       {-dump machCode-}
 
       fn <- jit mem machCode

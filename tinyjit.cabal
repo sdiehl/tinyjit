@@ -27,4 +27,4 @@ executable example
     transformers >= 0.4 && <0.5,
     binary       >= 0.7 && <0.8,
     bytestring   >= 0.10 && <0.11,
-    vector       >= 0.11 && <0.12
+    vector       >= 0.10 && <0.12

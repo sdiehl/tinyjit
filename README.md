@@ -43,6 +43,8 @@ main :: IO ()
 main = do
   let jitsize = 256*1024
   mem <- allocateMemory jitsize
+  let jitm = assemble mem (factorial 5)
+
   case jitm of
     Left err -> putStrLn err
     Right jitst -> do
@@ -50,6 +52,18 @@ main = do
       fn <- jit mem machCode
       res <- fn
       putStrLn $ "Result: " <> show res
+```
+
+The machine code is generated.
+
+```
+48 c7 c1 05 00 00 00 48 c7 c0 01 00 00 00 48 f7 e1 e2 fc c3
+```
+
+And executed to yield the result:
+
+```
+Result: 120
 ```
 
 License

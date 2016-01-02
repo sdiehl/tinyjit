@@ -31,6 +31,9 @@ module Assembler (
 
   label,
 
+  prologue,
+  epilogue,
+
   hex,
   bytes,
 ) where
@@ -241,6 +244,20 @@ syscall :: X86 ()
 syscall = do
   emit [0x0f]
   emit [0x05]
+
+-- Functions
+
+prologue :: X86 ()
+prologue = do
+  push rbp
+  mov rbp rsp
+
+epilogue :: X86 ()
+epilogue = do
+  pop rax
+  mov rsp rbp
+  pop rbp
+  ret
 
 -- Registers
 

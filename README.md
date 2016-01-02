@@ -11,15 +11,15 @@ The factorial function can be written in assembly, taking the input value in
 ``%rcx`` and computing the resulting value in ``%rax``.
 
 ```perl
-	.global main
+.global main
 
 main:
-	mov rcx, 5
-	mov rax, 1
+        mov rcx, 5
+        mov rax, 1
 .factor:
-	mul rcx
-	loop .factor
-	ret
+        mul rcx
+        loop .factor
+        ret
 ```
 
 In our Haskell logic we compose these operations inside of the ``X86`` monad.

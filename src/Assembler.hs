@@ -106,8 +106,8 @@ data Instr
 
 data JITMem = JITMem
  { _instrs :: [Instr]
- , _icount :: Word32
  , _mach   :: [CUChar]
+ , _icount :: Word32
  , _memptr :: Word32
  , _memoff :: Word32
  } deriving (Eq, Show)
@@ -142,33 +142,33 @@ add :: Val -> Val -> X86 ()
 add (R l) (I r) = do
   emit [0x48]              -- REX prefix
   emit [0x83]              -- ADD
-  emit [0xc0 .|. opcode l]
+  emit [0xc0 .|. index l]
   emit [fromIntegral r]
 add (R l) (R r) = do
   emit [0x48]              -- REX prefix
   emit [0x01]              -- ADD
-  emit [0xc0 .|. opcode r `shiftL` 3 .|. opcode l]
+  emit [0xc0 .|. index r `shiftL` 3 .|. index l]
 add _ _ = nodef
 
 sub :: Val -> Val -> X86 ()
 sub (R l) (I r) = do
   emit [0x48]              -- REX prefix
-  emit [0x83]              -- ADD
-  emit [0xc0 .|. 0x05 `shiftL` 3 .|. opcode l]
+  emit [0x83]              -- SUB
+  emit [0xc0 .|. 0x05 `shiftL` 3 .|. index l]
   emit [fromIntegral r]
 sub (R l) (R r) = do
   emit [0x48]              -- REX prefix
   emit [0x29]              -- SUB
-  emit [0xc0 .|. opcode r `shiftL` 3 .|. opcode l]
+  emit [0xc0 .|. index r `shiftL` 3 .|. index l]
 
 push :: Val -> X86 ()
 push (R l) = do
-  emit [0x50 + opcode l]
+  emit [0x50 + index l]
 push _ = nodef
 
 pop :: Val -> X86 ()
 pop (R l) = do
-  emit [0x58 + opcode l]
+  emit [0x58 + index l]
 pop _ = nodef
 
 call :: Val -> X86 ()
@@ -182,27 +182,27 @@ mul :: Val -> X86 ()
 mul (R l) = do
   emit [0x48]
   emit [0xF7]
-  emit [0xE0 .|. opcode l]
+  emit [0xE0 .|. index l]
 mul _ = nodef
 
 imul :: Val -> Val -> X86 ()
 imul (R l) (I r) = do
   emit [0x48]
   emit [0x6B]
-  emit [0xc0 .|. opcode l]
+  emit [0xc0 .|. index l]
   emit [fromIntegral r]
 imul (R l) (R r) = do
   emit [0x48]
   emit [0x0F]
   emit [0xAF]
-  emit [0xC0 .|. opcode r `shiftL` 3 .|. opcode l]
+  emit [0xC0 .|. index r `shiftL` 3 .|. index l]
 imul _ _ = nodef
 
 mov :: Val -> Val -> X86 ()
 mov (R dst) (I src) = do
   emit [0x48] -- REX.W prefix
   emit [0xC7]
-  emit [0xC0 .|. (opcode dst .&. 7)]
+  emit [0xC0 .|. (index dst .&. 7)]
   imm src
 mov (R dst) (A src) = do
   emit [0x48] -- REX.W prefix
@@ -212,7 +212,7 @@ mov (R dst) (A src) = do
 mov (R dst) (R src) = do
   emit [0x48]              -- REX.W prefix
   emit [0x89]              -- MOV
-  emit [0xC0 .|. opcode src `shiftL` 3 .|. opcode dst]
+  emit [0xC0 .|. index src `shiftL` 3 .|. index dst]
 mov _ _ = nodef
 
 nop :: X86 ()
@@ -223,14 +223,14 @@ inc :: Val -> X86()
 inc (R dst) = do
   emit [0x48]              -- REX prefix
   emit [0xFF]              -- INC
-  emit [0xc0 + opcode dst]
+  emit [0xc0 + index dst]
 inc _ = nodef
 
 dec :: Val -> X86()
 dec (R dst) = do
   emit [0x48]              -- REX prefix
   emit [0xFF]              -- DEC
-  emit [0xc0 + (opcode dst + 8)]
+  emit [0xc0 + (index dst + 8)]
 dec _ = nodef
 
 loop :: Val -> X86()
@@ -291,8 +291,8 @@ label = do
 nodef :: X86 ()
 nodef = lift $ throwE "Invalid operation"
 
-opcode :: Reg -> CUChar
-opcode x = case x of
+index :: Reg -> CUChar
+index x = case x of
   RAX -> 0
   RCX -> 1
   RDX -> 2

@@ -283,7 +283,6 @@ rcx = R RCX
 label :: X86 Val
 label = do
   addr <- gets _memoff
-  ptr  <- gets _memptr
   return (A addr)
 
 nodef :: X86 ()

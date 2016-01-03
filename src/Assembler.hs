@@ -141,9 +141,8 @@ ret = do
 add :: Val -> Val -> X86 ()
 add (R l) (I r) = do
   emit [0x48]              -- REX prefix
-  emit [0x83]              -- ADD
-  emit [0xc0 .|. index l]
-  emit [fromIntegral r]
+  emit [0x05]              -- ADD
+  imm r
 add (R l) (R r) = do
   emit [0x48]              -- REX prefix
   emit [0x01]              -- ADD
@@ -153,9 +152,8 @@ add _ _ = nodef
 sub :: Val -> Val -> X86 ()
 sub (R l) (I r) = do
   emit [0x48]              -- REX prefix
-  emit [0x83]              -- SUB
-  emit [0xc0 .|. 0x05 `shiftL` 3 .|. index l]
-  emit [fromIntegral r]
+  emit [0x2D]              -- SUB
+  imm r
 sub (R l) (R r) = do
   emit [0x48]              -- REX prefix
   emit [0x29]              -- SUB
@@ -188,9 +186,9 @@ mul _ = nodef
 imul :: Val -> Val -> X86 ()
 imul (R l) (I r) = do
   emit [0x48]
-  emit [0x6B]
+  emit [0x69]
   emit [0xc0 .|. index l]
-  emit [fromIntegral r]
+  imm r
 imul (R l) (R r) = do
   emit [0x48]
   emit [0x0F]
@@ -200,12 +198,12 @@ imul _ _ = nodef
 
 mov :: Val -> Val -> X86 ()
 mov (R dst) (I src) = do
-  emit [0x48] -- REX.W prefix
+  emit [0x48]
   emit [0xC7]
   emit [0xC0 .|. (index dst .&. 7)]
   imm src
 mov (R dst) (A src) = do
-  emit [0x48] -- REX.W prefix
+  emit [0x48]
   emit [0xC7]
   emit [0xC7]
   imm src

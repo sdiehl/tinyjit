@@ -78,7 +78,6 @@ data Val
   = I Int64      -- int
   | R Reg        -- register
   | A Word32     -- Addr
-  | L Word32     -- Label
   deriving (Eq, Show)
 
 data Instr
@@ -93,7 +92,6 @@ data Instr
   | Dec Val
   | Push Val
   | Pop Val
-  | PreCall Val
   | Call Val
   | Loop Val
   | Nop
@@ -237,6 +235,7 @@ loop (A dst) = do
   src <- gets _memoff
   ptr <- gets _memptr
   emit [fromIntegral $ dst - src]
+loop _ = nodef
 
 syscall :: X86 ()
 syscall = do

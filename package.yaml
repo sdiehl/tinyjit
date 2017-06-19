@@ -14,7 +14,7 @@ dependencies:
 - transformers >=0.4 && <0.6
 - binary >=0.7 && <0.9
 - bytestring >=0.10 && <0.11
-- vector >=0.10 && <0.12
+- vector >=0.10 && <0.13
 executables:
   example:
     main: Main.hs

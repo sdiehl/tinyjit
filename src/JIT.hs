@@ -2,47 +2,41 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module JIT (
-  allocateMemory,
-  codePtr,
-  vecPtr,
+module JIT
+  ( allocateMemory,
+    codePtr,
+    vecPtr,
+    asciz,
+    extern,
+    heapPtr,
+    getFunction,
+    jit,
+  )
+where
 
-  asciz,
-  extern,
-  heapPtr,
-
-  getFunction,
-  jit,
-) where
-
-import Data.Int
-import Data.Word
-import Data.Bits
-import Data.Monoid
-import Data.Typeable
-import Data.Binary.Put
-import Data.ByteString.Lazy.Char8
-import qualified Data.ByteString.Internal as BS (c2w, w2c)
-
-import Unsafe.Coerce
 import Control.Exception
 import Control.Monad (when)
-
-import Foreign.Ptr
-import Foreign.C.Types
-import Foreign.C.String
-import Foreign.Storable
-import Foreign.ForeignPtr
-import Foreign.Marshal.Utils (copyBytes)
-
-import System.Posix.Types
-import System.Posix.DynamicLinker
-
-import Control.Monad.Trans.Writer
 import Control.Monad.Trans.State
-
+import Control.Monad.Trans.Writer
+import Data.Binary.Put
+import Data.Bits
+import qualified Data.ByteString.Internal as BS (c2w, w2c)
+import Data.ByteString.Lazy.Char8
+import Data.Int
+import Data.Monoid
+import Data.Typeable
 import qualified Data.Vector.Storable as V
 import qualified Data.Vector.Storable.Mutable as VM
+import Data.Word
+import Foreign.C.String
+import Foreign.C.Types
+import Foreign.ForeignPtr
+import Foreign.Marshal.Utils (copyBytes)
+import Foreign.Ptr
+import Foreign.Storable
+import System.Posix.DynamicLinker
+import System.Posix.Types
+import Unsafe.Coerce
 
 -------------------------------------------------------------------------------
 -- Prot Option
@@ -75,23 +69,27 @@ mmapAnon = MmapOption 0x20
 mmapPrivate :: MmapOption
 mmapPrivate = MmapOption 0x02
 
+instance Semigroup ProtOption where
+  (ProtOption a) <> (ProtOption b) = ProtOption (a .|. b)
+
 instance Monoid ProtOption where
   mempty = protNone
-  mappend (ProtOption a) (ProtOption b) = ProtOption (a .|. b)
+
+instance Semigroup MmapOption where
+  (MmapOption a) <> (MmapOption b) = MmapOption (a .|. b)
 
 instance Monoid MmapOption where
   mempty = mmapNone
-  mappend (MmapOption a) (MmapOption b) = MmapOption (a .|. b)
 
 -------------------------------------------------------------------------------
 -- JIT Memory
 -------------------------------------------------------------------------------
 
 mapAnon, mapPrivate :: MmapFlags
-mapAnon    = 0x20
+mapAnon = 0x20
 mapPrivate = 0x02
 
-newtype MmapFlags = MmapFlags { unMmapFlags :: CInt }
+newtype MmapFlags = MmapFlags {unMmapFlags :: CInt}
   deriving (Eq, Show, Ord, Num, Bits)
 
 foreign import ccall "dynamic"
@@ -108,8 +106,7 @@ jit mem machCode = do
   withForeignPtr (vecPtr code) $ \ptr -> do
     {-print ptr -- Pointer to Haskell array-}
     {-print mem -- Pointer to JIT memory-}
-    copyBytes mem ptr (8*6)
-
+    copyBytes mem ptr (8 * 6)
   return (getFunction mem)
 
 data MmapException = MmapException
@@ -117,18 +114,17 @@ data MmapException = MmapException
 
 instance Exception MmapException
 
-
 foreign import ccall unsafe "sys/mman.h mmap"
   c_mmap :: Ptr () -> CSize -> ProtOption -> MmapFlags -> Fd -> COff -> IO (Ptr a)
 
-mmap
-  :: Ptr ()
-  -> CSize
-  -> ProtOption
-  -> MmapFlags
-  -> Fd
-  -> COff
-  -> IO (Ptr Word8)
+mmap ::
+  Ptr () ->
+  CSize ->
+  ProtOption ->
+  MmapFlags ->
+  Fd ->
+  COff ->
+  IO (Ptr Word8)
 mmap addr len prot flags fd offset = do
   ptr <- c_mmap addr len prot flags fd offset
   when (ptr == intPtrToPtr (-1)) $ throwIO MmapException

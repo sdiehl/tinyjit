@@ -73,4 +73,4 @@ License
 -------
 
 Released under the MIT License.
-Copyright (c) 2016, Stephen Diehl
+Copyright (c) 2016-2020, Stephen Diehl

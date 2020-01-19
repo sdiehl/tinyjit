@@ -7,3 +7,5 @@ cabal.sandbox.config
 *.o
 .stack-work
 *.hi
+dist-newstyle
+stack.yaml.lock

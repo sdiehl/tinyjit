@@ -1,20 +1,23 @@
-name: tinyjit
-version: '0.1.0'
-synopsis: Tiny Haskell JIT
-description: Tiny Haskell JIT
-category: Logic
-author: Stephen Diehl
-maintainer: stephen.m.diehl@gmail.com
-copyright: 2016 Stephen Diehl
-license: MIT
-homepage: https://github.com/sdiehl/tinyjit
+name        : tinyjit
+version     : '0.1.0'
+synopsis    : Tiny Haskell JIT
+description : Tiny Haskell JIT Example
+category    : Compilers
+author      : Stephen Diehl
+maintainer  : stephen.m.diehl@gmail.com
+copyright   : 2016-2020 Stephen Diehl
+license     : MIT
+homepage    : https://github.com/sdiehl/tinyjit
+github      : sdiehl/tinyjit
+
 dependencies:
-- base >=4.6 && <5.0
-- unix >=2.6 && <2.8
-- transformers >=0.4 && <0.6
-- binary >=0.7 && <0.9
-- bytestring >=0.10 && <0.11
-- vector >=0.10 && <0.13
+  - base         >= 4.6  && < 5.0
+  - unix         >= 2.6  && < 2.8
+  - transformers >= 0.4  && < 0.6
+  - binary       >= 0.7  && < 0.9
+  - bytestring   >= 0.10 && < 0.11
+  - vector       >= 0.10 && < 0.13
+
 executables:
   example:
     main: Main.hs
